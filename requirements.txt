@@ -1,2 +1,3 @@
-urllib
+#### Requirements without Version Specifiers ####
+urllib3
 selenium
