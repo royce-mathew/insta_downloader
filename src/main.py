@@ -2,6 +2,7 @@ import os
 import time
 import platform
 import json
+import getch
 
 from os import path
 
@@ -30,8 +31,11 @@ class InstagramDownloader(object):
 				
 				# Prompt user for username, password
 				print("It seems to be your first time running this program.")
-				self.username = input("Enter username: ")
-				self.password = input("Enter password: ")
+				self.get_data()
+
+				self.username, self.password = self.get_data()
+				# self.username = input("Enter username: ")
+				# self.password = input("Enter password: ")
 				
 				# Set username and password inside the json list
 				json_data["username"] = self.username
@@ -63,6 +67,38 @@ class InstagramDownloader(object):
 		# Get full path of geckodriver
 		self.gecko_path = current_path + geckodriverpath
 		self.login_browser()
+
+	@staticmethod
+	def get_pass():
+		local_username: str = input("Please enter your username: ")
+		local_pass: str = ""
+
+		while len(local_pass) < 30: # No one has a password length of 30
+			x = getch.getch()
+			#	Windows has endlines set as '\r\n
+			#	MacOs Ends with '\r'
+			#	Unix/Linux uses '\n'
+			if x == '\n' or x == '\r':
+
+				# Display Data
+				print("Are you happy with your current data?")
+				print(f"Username: {local_username}")
+				print(f"Password: {len(local_pass) * '*'}")
+
+				happy_input = input("Enter y/n") # Prompt user for input
+
+				if happy_input.lower() == "y":
+					return local_pass, local_username
+				else:
+					print("Please Re-Enter your data")
+					return InstagramDownloader.get_pass()
+				
+			
+			# The flush argument tells the terminal to not buffer the output data and forcibly flush it
+			print("*", end='', flush=True)
+			local_pass += x
+		
+		print("REACHED END OF GET_PASS FUNCTION: ERROR")
 
 	@staticmethod
 	def get_options():
