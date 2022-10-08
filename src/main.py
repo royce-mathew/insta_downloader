@@ -2,7 +2,6 @@ import os
 import time
 import platform
 import json
-import getch
 
 from os import path
 
@@ -31,11 +30,8 @@ class InstagramDownloader(object):
 				
 				# Prompt user for username, password
 				print("It seems to be your first time running this program.")
-				self.get_data()
 
 				self.username, self.password = self.get_data()
-				# self.username = input("Enter username: ")
-				# self.password = input("Enter password: ")
 				
 				# Set username and password inside the json list
 				json_data["username"] = self.username
@@ -51,8 +47,13 @@ class InstagramDownloader(object):
 					json_data = json.load(datafile)
 					self.username = json_data["username"]
 					self.password = json_data["password"]
-				except JSONDecodeError:
-					print("Json Decode error happened, please navigate to assets/data.json and delete the file")
+				except Exception as e:
+					if e == JSONDecodeError or e == KeyError or AttributeError:
+						os.remove(json_file_path) # Remove file
+						self.__init__() # Call the constructor 
+						print("Json Decode error happened, deleting json file")
+					else:
+						print(e)
 			
 
 		# Match geckodriver path based on platform
@@ -69,36 +70,22 @@ class InstagramDownloader(object):
 		self.login_browser()
 
 	@staticmethod
-	def get_pass():
+	def get_data():
 		local_username: str = input("Please enter your username: ")
-		local_pass: str = ""
+		local_pass: str = input("Please enter your username: ")
 
-		while len(local_pass) < 30: # No one has a password length of 30
-			x = getch.getch()
-			#	Windows has endlines set as '\r\n
-			#	MacOs Ends with '\r'
-			#	Unix/Linux uses '\n'
-			if x == '\n' or x == '\r':
+		# Display Data
+		print("\nAre you happy with your current data?")
+		print(f"Username: {local_username}")
+		print(f"Password: {len(local_pass) * '*'}")
 
-				# Display Data
-				print("Are you happy with your current data?")
-				print(f"Username: {local_username}")
-				print(f"Password: {len(local_pass) * '*'}")
+		happy_input = input("Enter y/n (default yes): ").lower().replace("\n", "") # Prompt user for input
 
-				happy_input = input("Enter y/n") # Prompt user for input
-
-				if happy_input.lower() == "y":
-					return local_pass, local_username
-				else:
-					print("Please Re-Enter your data")
-					return InstagramDownloader.get_pass()
-				
-			
-			# The flush argument tells the terminal to not buffer the output data and forcibly flush it
-			print("*", end='', flush=True)
-			local_pass += x
-		
-		print("REACHED END OF GET_PASS FUNCTION: ERROR")
+		if happy_input == "y" or happy_input == "yes" or happy_input == "":
+			return local_username, local_pass
+		else:
+			print("Please Re-Enter your data")
+			return InstagramDownloader.get_data()
 
 	@staticmethod
 	def get_options():
